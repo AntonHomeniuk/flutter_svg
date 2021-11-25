@@ -542,7 +542,18 @@ abstract class AssetBundlePictureProvider
   @protected
   Future<PictureInfo> _loadAsync(
       AssetBundlePictureKey key, PictureErrorListener? onError) async {
-    final String data = await key.bundle.loadString(key.name);
+    String data;
+    try {
+      data = await key.bundle.loadString(key.name);
+    } catch (e) {
+      List<String> splittedPath = key.name.split('/');
+      if (splittedPath.length > 1) {
+        splittedPath.removeAt(splittedPath.length - 2);
+        data = await key.bundle.loadString(splittedPath.join('/'));
+      } else {
+        rethrow;
+      }
+    }
 
     if (onError != null) {
       return decoder(
